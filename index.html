@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema da Loja - Painel Completo</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a33;
+      --panel-2: #17213f;
+      --text: #eef3ff;
+      --muted: #9fb0d0;
+      --line: rgba(255,255,255,.10);
+      --brand: #6ee7ff;
+      --brand-2: #8b5cf6;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(110,231,255,.18), transparent 34%),
+        radial-gradient(circle at top right, rgba(139,92,246,.20), transparent 35%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    .hidden { display: none !important; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 290px 1fr;
+    }
+
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: min(470px, 100%);
+      background: rgba(18,26,51,.92);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      padding: 28px;
+    }
+
+    .logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #07101f;
+      font-weight: 900;
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3 { margin: 0; }
+    p { color: var(--muted); line-height: 1.5; }
+
+    .field { margin: 14px 0; }
+    .label { display: block; color: var(--muted); margin-bottom: 7px; font-size: 14px; }
+
+    input, select, textarea {
+      width: 100%;
+      background: #091126;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 13px;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: rgba(110,231,255,.7); }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 15px;
+      cursor: pointer;
+      color: #07101f;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--brand), #a7f3d0);
+      transition: transform .15s, opacity .15s;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn.secondary { background: #233050; color: var(--text); }
+    .btn.danger { background: var(--bad); color: white; }
+    .btn.warning { background: var(--warn); color: #1f1300; }
+    .btn.good { background: var(--good); color: #04140a; }
+    .btn.small { padding: 8px 10px; border-radius: 11px; font-size: 13px; }
+
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(10,16,34,.72);
+      padding: 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .user-box {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.04);
+      margin-bottom: 16px;
+    }
+
+    .user-name { font-weight: 900; font-size: 18px; }
+    .user-role { color: var(--brand); font-size: 13px; margin-top: 4px; }
+
+    .nav { display: grid; gap: 8px; }
+    .nav button {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 12px;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+    .nav button.active, .nav button:hover {
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      border-color: var(--line);
+    }
+
+    main { padding: 24px; overflow: hidden; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .title-area h1 { font-size: clamp(24px, 3vw, 38px); }
+    .title-area p { margin: 7px 0 0; }
+
+    .grid { display: grid; gap: 16px; }
+    .grid.cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card {
+      background: rgba(18,26,51,.84);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.18);
+    }
+
+    .stat-value { font-size: 28px; font-weight: 900; margin-top: 8px; }
+    .stat-label { color: var(--muted); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { color: var(--muted); font-size: 13px; background: rgba(255,255,255,.04); }
+    tr:hover td { background: rgba(255,255,255,.025); }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(110,231,255,.12);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .pill.good { background: rgba(34,197,94,.15); color: #86efac; }
+    .pill.warn { background: rgba(245,158,11,.15); color: #fcd34d; }
+    .pill.bad { background: rgba(239,68,68,.15); color: #fca5a5; }
+
+    .form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .form-row.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .organogram {
+      text-align: center;
+      overflow-x: auto;
+      padding: 10px;
+    }
+
+    .org-node {
+      display: inline-block;
+      min-width: 190px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      margin: 8px;
+      font-weight: 800;
+    }
+
+    .org-role { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; font-weight: 600; }
+    .org-line { height: 24px; border-left: 2px solid rgba(255,255,255,.25); margin: 0 auto; width: 0; }
+    .org-row { display: flex; justify-content: center; gap: 14px; min-width: 720px; }
+    .org-bridge { height: 20px; border-top: 2px solid rgba(255,255,255,.25); width: 660px; margin: 0 auto; }
+
+    .notice {
+      padding: 12px;
+      background: rgba(110,231,255,.10);
+      border: 1px solid rgba(110,231,255,.25);
+      border-radius: 14px;
+      color: #dffaff;
+      margin: 12px 0;
+    }
+
+    @media (max-width: 950px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .grid.cards, .grid.two, .form-row, .form-row.three { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      main { padding: 16px; }
+      table { font-size: 13px; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <div class="logo">DEV</div>
+      <h1>Sistema da Loja</h1>
+      <p>Login por cargo para sua equipe: Diretor Geral, Auxiliar DEV, Produção, Estoque e Controladoria.</p>
+      <div class="notice">
+        <b>Acesso restrito à equipe.</b><br>
+        Entre apenas com seu usuário e senha autorizados.
+      </div>
+
+      <div class="field">
+        <label class="label">Usuário</label>
+        <input id="loginUser" placeholder="Ex: diretor" />
+      </div>
+      <div class="field">
+        <label class="label">Senha</label>
+        <input id="loginPass" type="password" placeholder="Digite sua senha" />
+      </div>
+      <button class="btn" onclick="login()" style="width:100%">Entrar no painel</button>
+      <p id="loginError" style="color:#fca5a5"></p>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="logo">DEV</div>
+      <div class="user-box">
+        <div id="currentName" class="user-name">Usuário</div>
+        <div id="currentRole" class="user-role">Cargo</div>
+      </div>
+      <div class="nav" id="navButtons"></div>
+      <div class="actions">
+        <button class="btn secondary" onclick="seedDemoData()">Gerar dados demo</button>
+        <button class="btn danger" onclick="logout()">Sair</button>
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="title-area">
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageDesc">Visão geral da loja.</p>
+        </div>
+      </div>
+
+      <section id="dashboard" class="section active">
+        <div class="grid cards">
+          <div class="card"><div class="stat-label">Produtos</div><div id="statProducts" class="stat-value">0</div></div>
+          <div class="card"><div class="stat-label">Pedidos</div><div id="statOrders" class="stat-value">0</div></div>
+          <div class="card"><div class="stat-label">Vendas</div><div id="statSales" class="stat-value">R$ 0,00</div></div>
+          <div class="card"><div class="stat-label">Lucro estimado</div><div id="statProfit" class="stat-value">R$ 0,00</div></div>
+        </div>
+        <div class="grid two" style="margin-top:16px">
+          <div class="card">
+            <h2>Organograma</h2>
+            <div class="organogram">
+              <div class="org-node">Você <span class="org-role">DEV & Diretor Geral</span></div>
+              <div class="org-line"></div>
+              <div class="org-node">Melhor Amigo <span class="org-role">Auxiliar DEV</span></div>
+              <div class="org-line"></div>
+              <div class="org-bridge"></div>
+              <div class="org-row">
+                <div class="org-node">Amigo 3 <span class="org-role">Controle de Produção</span></div>
+                <div class="org-node">Amigo 4 <span class="org-role">CEA - Confrontador de Estoque Auxiliar</span></div>
+                <div class="org-node">Amigo 5 <span class="org-role">Controladoria</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Fluxo da loja</h2>
+            <p>Pedido entra → Produção confere → Estoque movimenta → Controladoria valida → Diretor acompanha tudo.</p>
+            <div id="lastLogs"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="produtos" class="section">
+        <div class="card">
+          <h2>Cadastrar produto</h2>
+          <div class="form-row three">
+            <div class="field"><label class="label">Nome</label><input id="prodName" placeholder="Camisa, acessório, brinquedo..." /></div>
+            <div class="field"><label class="label">Custo</label><input id="prodCost" type="number" step="0.01" placeholder="10.00" /></div>
+            <div class="field"><label class="label">Preço venda</label><input id="prodPrice" type="number" step="0.01" placeholder="25.00" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label class="label">Estoque inicial</label><input id="prodStock" type="number" placeholder="20" /></div>
+            <div class="field"><label class="label">Categoria</label><input id="prodCategory" placeholder="Roupas, acessórios..." /></div>
+          </div>
+          <button class="btn" onclick="addProduct()">Adicionar produto</button>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h2>Produtos cadastrados</h2>
+          <div id="productsTable"></div>
+        </div>
+      </section>
+
+      <section id="pedidos" class="section">
+        <div class="card">
+          <h2>Novo pedido</h2>
+          <div class="form-row three">
+            <div class="field"><label class="label">Cliente</label><input id="orderClient" placeholder="Nome do cliente" /></div>
+            <div class="field"><label class="label">Produto</label><select id="orderProduct"></select></div>
+            <div class="field"><label class="label">Quantidade</label><input id="orderQty" type="number" value="1" /></div>
+          </div>
+          <div class="field"><label class="label">Endereço</label><input id="orderAddress" placeholder="Rua, número, bairro, cidade" /></div>
+          <button class="btn" onclick="addOrder()">Criar pedido</button>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h2>Pedidos</h2>
+          <div id="ordersTable"></div>
+        </div>
+      </section>
+
+      <section id="producao" class="section">
+        <div class="card">
+          <h2>Controle de Produção</h2>
+          <p>Área do Amigo 3: acompanhar itens que precisam ser produzidos, embalados e conferidos.</p>
+          <div id="productionTable"></div>
+        </div>
+      </section>
+
+      <section id="estoque" class="section">
+        <div class="card">
+          <h2>CEA - Confrontador de Estoque Auxiliar</h2>
+          <p>Área para movimentar entrada/saída de produtos e conferir divergências.</p>
+          <div class="form-row three">
+            <div class="field"><label class="label">Produto</label><select id="stockProduct"></select></div>
+            <div class="field"><label class="label">Tipo</label><select id="stockType"><option value="entrada">Entrada</option><option value="saida">Saída</option></select></div>
+            <div class="field"><label class="label">Quantidade</label><input id="stockQty" type="number" value="1" /></div>
+          </div>
+          <div class="field"><label class="label">Motivo</label><input id="stockReason" placeholder="Compra, venda, ajuste, perda..." /></div>
+          <button class="btn" onclick="moveStock()">Registrar movimento</button>
+        </div>
+        <div class="card" style="margin-top:16px"><h2>Movimentos</h2><div id="stockTable"></div></div>
+      </section>
+
+      <section id="controladoria" class="section">
+        <div class="card">
+          <h2>Controladoria</h2>
+          <p>Área do Amigo 5: acompanhar compras, vendas, lucro estimado e possíveis perdas.</p>
+          <div id="financeTable"></div>
+        </div>
+      </section>
+
+      <section id="equipe" class="section">
+        <div class="card">
+          <h2>Cargos da equipe</h2>
+          <table>
+            <thead><tr><th>Pessoa</th><th>Cargo</th><th>Função</th></tr></thead>
+            <tbody>
+              <tr><td>Você</td><td>DEV & Diretor Geral</td><td>Comando total, site, sistema, decisões finais.</td></tr>
+              <tr><td>Melhor amigo</td><td>Auxiliar DEV</td><td>Supervisiona erros, ajuda no código e revisão técnica.</td></tr>
+              <tr><td>Amigo 3</td><td>Controle de Produção</td><td>Produz, embala e confere qualidade.</td></tr>
+              <tr><td>Amigo 4</td><td>CEA - Confrontador de Estoque Auxiliar</td><td>Movimenta estoque e confere entrada/saída.</td></tr>
+              <tr><td>Amigo 5</td><td>Controladoria</td><td>Confere compras, vendas, lucro, prejuízo e relatórios.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const USERS = [
+      { user: 'diretor', pass: '497044', name: 'Você', role: 'DEV & Diretor Geral', access: ['dashboard','produtos','pedidos','producao','estoque','controladoria','equipe'] },
+      { user: 'auxdev', pass: 'DevAux@2026!', name: 'Melhor Amigo', role: 'Auxiliar DEV', access: ['dashboard','produtos','pedidos','equipe'] },
+      { user: 'producao', pass: 'Prod@Loja2026!', name: 'Amigo 3', role: 'Controle de Produção', access: ['dashboard','producao','pedidos','equipe'] },
+      { user: 'estoque', pass: 'CEA@Estoque2026!', name: 'Amigo 4', role: 'CEA - Confrontador de Estoque Auxiliar', access: ['dashboard','estoque','pedidos','equipe'] },
+      { user: 'controladoria', pass: 'Ctrl@Financeiro2026!', name: 'Amigo 5', role: 'Controladoria', access: ['dashboard','controladoria','pedidos','equipe'] }
+    ];
+
+    const MENU = {
+      dashboard: ['Dashboard', 'Visão geral da loja.'],
+      produtos: ['Produtos', 'Cadastro e lista de produtos.'],
+      pedidos: ['Pedidos', 'Criação e acompanhamento de pedidos.'],
+      producao: ['Produção', 'Controle de produção, embalagem e qualidade.'],
+      estoque: ['Estoque', 'Movimentação e conferência de estoque.'],
+      controladoria: ['Controladoria', 'Vendas, custos e lucro estimado.'],
+      equipe: ['Equipe', 'Cargos e funções de cada pessoa.']
+    };
+
+    let currentUser = null;
+
+    function load(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+      catch { return fallback; }
+    }
+
+    function save(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+
+    function money(value) {
+      return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function now() { return new Date().toLocaleString('pt-BR'); }
+
+    function getProducts() { return load('loja_products', []); }
+    function setProducts(v) { save('loja_products', v); }
+    function getOrders() { return load('loja_orders', []); }
+    function setOrders(v) { save('loja_orders', v); }
+    function getMovements() { return load('loja_movements', []); }
+    function setMovements(v) { save('loja_movements', v); }
+    function getLogs() { return load('loja_logs', []); }
+    function setLogs(v) { save('loja_logs', v); }
+
+    function log(text) {
+      const logs = getLogs();
+      logs.unshift({ text, date: now(), by: currentUser ? currentUser.name : 'Sistema' });
+      setLogs(logs.slice(0, 30));
+    }
+
+    function login() {
+      const user = document.getElementById('loginUser').value.trim().toLowerCase();
+      const pass = document.getElementById('loginPass').value.trim();
+      const found = USERS.find(u => u.user === user && u.pass === pass);
+      if (!found) {
+        document.getElementById('loginError').textContent = 'Usuário ou senha incorretos.';
+        return;
+      }
+      currentUser = found;
+      sessionStorage.setItem('currentUser', JSON.stringify(found));
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('currentName').textContent = found.name;
+      document.getElementById('currentRole').textContent = found.role;
+      buildMenu();
+      showSection('dashboard');
+      renderAll();
+    }
+
+    function logout() {
+      currentUser = null;
+      sessionStorage.removeItem('currentUser');
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('app').classList.add('hidden');
+    }
+
+    function buildMenu() {
+      const nav = document.getElementById('navButtons');
+      nav.innerHTML = '';
+      currentUser.access.forEach(id => {
+        const btn = document.createElement('button');
+        btn.textContent = MENU[id][0];
+        btn.onclick = () => showSection(id);
+        btn.dataset.id = id;
+        nav.appendChild(btn);
+      });
+    }
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+      document.getElementById('pageTitle').textContent = MENU[id][0];
+      document.getElementById('pageDesc').textContent = MENU[id][1];
+      renderAll();
+    }
+
+    function addProduct() {
+      const name = document.getElementById('prodName').value.trim();
+      const cost = Number(document.getElementById('prodCost').value);
+      const price = Number(document.getElementById('prodPrice').value);
+      const stock = Number(document.getElementById('prodStock').value);
+      const category = document.getElementById('prodCategory').value.trim() || 'Geral';
+      if (!name || price <= 0 || stock < 0) return alert('Preencha nome, preço e estoque corretamente.');
+      const products = getProducts();
+      products.push({ id: crypto.randomUUID(), name, cost, price, stock, category, createdAt: now() });
+      setProducts(products);
+      log('Produto cadastrado: ' + name);
+      ['prodName','prodCost','prodPrice','prodStock','prodCategory'].forEach(id => document.getElementById(id).value = '');
+      renderAll();
+    }
+
+    function deleteProduct(id) {
+      if (!confirm('Excluir produto?')) return;
+      const products = getProducts().filter(p => p.id !== id);
+      setProducts(products);
+      log('Produto excluído.');
+      renderAll();
+    }
+
+    function addOrder() {
+      const client = document.getElementById('orderClient').value.trim();
+      const productId = document.getElementById('orderProduct').value;
+      const qty = Number(document.getElementById('orderQty').value);
+      const address = document.getElementById('orderAddress').value.trim();
+      const product = getProducts().find(p => p.id === productId);
+      if (!client || !product || qty <= 0 || !address) return alert('Preencha pedido corretamente.');
+      if (product.stock < qty) return alert('Estoque insuficiente.');
+
+      const products = getProducts().map(p => p.id === productId ? { ...p, stock: p.stock - qty } : p);
+      setProducts(products);
+
+      const orders = getOrders();
+      orders.unshift({
+        id: crypto.randomUUID(), client, productId, productName: product.name,
+        qty, total: qty * product.price, cost: qty * (product.cost || 0), address,
+        status: 'Novo pedido', createdAt: now()
+      });
+      setOrders(orders);
+
+      const moves = getMovements();
+      moves.unshift({ id: crypto.randomUUID(), productName: product.name, type: 'saida', qty, reason: 'Venda para ' + client, date: now(), by: currentUser.name });
+      setMovements(moves);
+
+      log('Novo pedido criado para ' + client);
+      ['orderClient','orderAddress'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('orderQty').value = 1;
+      renderAll();
+    }
+
+    function updateOrderStatus(id, status) {
+      const orders = getOrders().map(o => o.id === id ? { ...o, status } : o);
+      setOrders(orders);
+      log('Pedido atualizado para: ' + status);
+      renderAll();
+    }
+
+    function moveStock() {
+      const productId = document.getElementById('stockProduct').value;
+      const type = document.getElementById('stockType').value;
+      const qty = Number(document.getElementById('stockQty').value);
+      const reason = document.getElementById('stockReason').value.trim() || 'Sem motivo informado';
+      const product = getProducts().find(p => p.id === productId);
+      if (!product || qty <= 0) return alert('Selecione produto e quantidade.');
+      if (type === 'saida' && product.stock < qty) return alert('Estoque insuficiente.');
+
+      const products = getProducts().map(p => {
+        if (p.id !== productId) return p;
+        return { ...p, stock: type === 'entrada' ? p.stock + qty : p.stock - qty };
+      });
+      setProducts(products);
+
+      const moves = getMovements();
+      moves.unshift({ id: crypto.randomUUID(), productName: product.name, type, qty, reason, date: now(), by: currentUser.name });
+      setMovements(moves);
+      log('Movimento de estoque: ' + type + ' de ' + qty + 'x ' + product.name);
+      document.getElementById('stockQty').value = 1;
+      document.getElementById('stockReason').value = '';
+      renderAll();
+    }
+
+    function renderAll() {
+      renderStats(); renderLogs(); renderProducts(); renderSelects(); renderOrders(); renderProduction(); renderStock(); renderFinance();
+    }
+
+    function renderStats() {
+      const products = getProducts();
+      const orders = getOrders();
+      const sales = orders.reduce((a,o) => a + o.total, 0);
+      const cost = orders.reduce((a,o) => a + o.cost, 0);
+      document.getElementById('statProducts').textContent = products.length;
+      document.getElementById('statOrders').textContent = orders.length;
+      document.getElementById('statSales').textContent = money(sales);
+      document.getElementById('statProfit').textContent = money(sales - cost);
+    }
+
+    function renderLogs() {
+      const logs = getLogs().slice(0, 6);
+      document.getElementById('lastLogs').innerHTML = logs.length ? logs.map(l => `<p><span class="pill">${l.date}</span> ${l.text} <br><small>por ${l.by}</small></p>`).join('') : '<p>Nenhuma atividade ainda.</p>';
+    }
+
+    function renderProducts() {
+      const products = getProducts();
+      const el = document.getElementById('productsTable');
+      if (!products.length) { el.innerHTML = '<p>Nenhum produto cadastrado.</p>'; return; }
+      el.innerHTML = `<table><thead><tr><th>Produto</th><th>Categoria</th><th>Custo</th><th>Preço</th><th>Estoque</th><th>Ação</th></tr></thead><tbody>${products.map(p => `
+        <tr><td>${p.name}</td><td>${p.category}</td><td>${money(p.cost)}</td><td>${money(p.price)}</td><td>${p.stock}</td><td><button class="btn danger small" onclick="deleteProduct('${p.id}')">Excluir</button></td></tr>
+      `).join('')}</tbody></table>`;
+    }
+
+    function renderSelects() {
+      const products = getProducts();
+      const options = products.map(p => `<option value="${p.id}">${p.name} - estoque ${p.stock}</option>`).join('');
+      document.getElementById('orderProduct').innerHTML = options || '<option value="">Cadastre produto</option>';
+      document.getElementById('stockProduct').innerHTML = options || '<option value="">Cadastre produto</option>';
+    }
+
+    function renderOrders() {
+      const orders = getOrders();
+      const el = document.getElementById('ordersTable');
+      if (!orders.length) { el.innerHTML = '<p>Nenhum pedido ainda.</p>'; return; }
+      el.innerHTML = `<table><thead><tr><th>Cliente</th><th>Produto</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody>${orders.map(o => `
+        <tr>
+          <td>${o.client}<br><small>${o.address}</small></td>
+          <td>${o.qty}x ${o.productName}<br><small>${o.createdAt}</small></td>
+          <td>${money(o.total)}</td>
+          <td><span class="pill ${o.status.includes('Finalizado') ? 'good' : o.status.includes('Produção') ? 'warn' : ''}">${o.status}</span></td>
+          <td class="actions">
+            <button class="btn warning small" onclick="updateOrderStatus('${o.id}','Em produção')">Produção</button>
+            <button class="btn secondary small" onclick="updateOrderStatus('${o.id}','Embalado e conferido')">Embalado</button>
+            <button class="btn good small" onclick="updateOrderStatus('${o.id}','Finalizado')">Finalizar</button>
+          </td>
+        </tr>`).join('')}</tbody></table>`;
+    }
+
+    function renderProduction() {
+      const orders = getOrders().filter(o => o.status !== 'Finalizado');
+      const el = document.getElementById('productionTable');
+      if (!orders.length) { el.innerHTML = '<p>Nada pendente para produção.</p>'; return; }
+      el.innerHTML = `<table><thead><tr><th>Pedido</th><th>Produto</th><th>Status</th><th>Ações</th></tr></thead><tbody>${orders.map(o => `
+        <tr><td>${o.client}</td><td>${o.qty}x ${o.productName}</td><td>${o.status}</td><td class="actions"><button class="btn warning small" onclick="updateOrderStatus('${o.id}','Em produção')">Iniciar</button><button class="btn good small" onclick="updateOrderStatus('${o.id}','Embalado e conferido')">Conferido</button></td></tr>
+      `).join('')}</tbody></table>`;
+    }
+
+    function renderStock() {
+      const moves = getMovements();
+      const el = document.getElementById('stockTable');
+      if (!moves.length) { el.innerHTML = '<p>Nenhuma movimentação.</p>'; return; }
+      el.innerHTML = `<table><thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Motivo</th><th>Responsável</th></tr></thead><tbody>${moves.map(m => `
+        <tr><td>${m.date}</td><td>${m.productName}</td><td><span class="pill ${m.type === 'entrada' ? 'good' : 'bad'}">${m.type}</span></td><td>${m.qty}</td><td>${m.reason}</td><td>${m.by}</td></tr>
+      `).join('')}</tbody></table>`;
+    }
+
+    function renderFinance() {
+      const orders = getOrders();
+      const total = orders.reduce((a,o) => a + o.total, 0);
+      const cost = orders.reduce((a,o) => a + o.cost, 0);
+      const profit = total - cost;
+      document.getElementById('financeTable').innerHTML = `
+        <div class="grid cards">
+          <div class="card"><div class="stat-label">Faturamento</div><div class="stat-value">${money(total)}</div></div>
+          <div class="card"><div class="stat-label">Custo vendido</div><div class="stat-value">${money(cost)}</div></div>
+          <div class="card"><div class="stat-label">Lucro estimado</div><div class="stat-value">${money(profit)}</div></div>
+          <div class="card"><div class="stat-label">Pedidos</div><div class="stat-value">${orders.length}</div></div>
+        </div>
+        <div style="margin-top:16px">
+          <table><thead><tr><th>Cliente</th><th>Produto</th><th>Venda</th><th>Custo</th><th>Lucro</th></tr></thead><tbody>${orders.map(o => `
+            <tr><td>${o.client}</td><td>${o.qty}x ${o.productName}</td><td>${money(o.total)}</td><td>${money(o.cost)}</td><td>${money(o.total - o.cost)}</td></tr>
+          `).join('')}</tbody></table>
+        </div>`;
+    }
+
+    function seedDemoData() {
+      if (!confirm('Gerar dados de exemplo?')) return;
+      setProducts([
+        { id: crypto.randomUUID(), name: 'Camisa Básica', category: 'Roupas', cost: 18, price: 39.9, stock: 25, createdAt: now() },
+        { id: crypto.randomUUID(), name: 'Boné Street', category: 'Acessórios', cost: 22, price: 49.9, stock: 15, createdAt: now() },
+        { id: crypto.randomUUID(), name: 'Chaveiro Geek', category: 'Brinquedos/Acessórios', cost: 4, price: 12.9, stock: 60, createdAt: now() }
+      ]);
+      setOrders([]); setMovements([]); setLogs([]);
+      log('Dados demo gerados.');
+      renderAll();
+    }
+
+    window.addEventListener('load', () => {
+      const saved = sessionStorage.getItem('currentUser');
+      if (saved) {
+        currentUser = JSON.parse(saved);
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('currentName').textContent = currentUser.name;
+        document.getElementById('currentRole').textContent = currentUser.role;
+        buildMenu(); showSection('dashboard'); renderAll();
+      }
+    });
+  </script>
+</body>
+</html>
