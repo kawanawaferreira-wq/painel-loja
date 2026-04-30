@@ -421,57 +421,6 @@
     </main>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyC55lW4WFgEZ9kW1VxRaXcpymY6ivjplAg",
-      authDomain: "painel-loja-958cf.firebaseapp.com",
-      projectId: "painel-loja-958cf",
-      storageBucket: "painel-loja-958cf.firebasestorage.app",
-      messagingSenderId: "231673295312",
-      appId: "1:231673295312:web:c5d0e4d25386d9b95a89d5",
-      measurementId: "G-ESD4TMHEP3"
-    };
-
-    const firebaseApp = initializeApp(firebaseConfig);
-    const db = getFirestore(firebaseApp);
-
-    window.salvarProdutoOnline = async function(produto) {
-      await setDoc(doc(db, "produtos", produto.id), produto);
-      console.log("Produto salvo no Firebase:", produto.name);
-    };
-
-    window.excluirProdutoOnline = async function(id) {
-      await deleteDoc(doc(db, "produtos", id));
-      console.log("Produto excluído do Firebase:", id);
-    };
-
-    window.salvarPedidoOnline = async function(pedido) {
-      await setDoc(doc(db, "pedidos", pedido.id), pedido);
-      console.log("Pedido salvo no Firebase:", pedido.id);
-    };
-
-    window.atualizarPedidoOnline = async function(id, dados) {
-      await updateDoc(doc(db, "pedidos", id), dados);
-      console.log("Pedido atualizado no Firebase:", id);
-    };
-
-    window.salvarMovimentoOnline = async function(movimento) {
-      await setDoc(doc(db, "movimentos", movimento.id), movimento);
-      console.log("Movimento salvo no Firebase:", movimento.id);
-    };
-
-    window.salvarLogOnline = async function(itemLog) {
-      await addDoc(collection(db, "logs"), itemLog);
-      console.log("Log salvo no Firebase:", itemLog.text);
-    };
-
-    window.firebasePronto = true;
-    console.log("Firebase conectado com sucesso 🔥");
-  </script>
-
   <script>
     const USERS = [
       { user: 'diretor', pass: '497044', name: 'Você', role: 'DEV & Diretor Geral', access: ['dashboard','produtos','pedidos','producao','estoque','controladoria','equipe'] },
@@ -517,10 +466,8 @@
 
     function log(text) {
       const logs = getLogs();
-      const itemLog = { text, date: now(), by: currentUser ? currentUser.name : 'Sistema' };
-      logs.unshift(itemLog);
+      logs.unshift({ text, date: now(), by: currentUser ? currentUser.name : 'Sistema' });
       setLogs(logs.slice(0, 30));
-      if (window.salvarLogOnline) salvarLogOnline(itemLog).catch(console.error);
     }
 
     function login() {
@@ -578,10 +525,8 @@
       const category = document.getElementById('prodCategory').value.trim() || 'Geral';
       if (!name || price <= 0 || stock < 0) return alert('Preencha nome, preço e estoque corretamente.');
       const products = getProducts();
-      const produto = { id: crypto.randomUUID(), name, cost, price, stock, category, createdAt: now() };
-      products.push(produto);
+      products.push({ id: crypto.randomUUID(), name, cost, price, stock, category, createdAt: now() });
       setProducts(products);
-      if (window.salvarProdutoOnline) salvarProdutoOnline(produto).catch(console.error);
       log('Produto cadastrado: ' + name);
       ['prodName','prodCost','prodPrice','prodStock','prodCategory'].forEach(id => document.getElementById(id).value = '');
       renderAll();
@@ -591,7 +536,6 @@
       if (!confirm('Excluir produto?')) return;
       const products = getProducts().filter(p => p.id !== id);
       setProducts(products);
-      if (window.excluirProdutoOnline) excluirProdutoOnline(id).catch(console.error);
       log('Produto excluído.');
       renderAll();
     }
@@ -607,24 +551,18 @@
 
       const products = getProducts().map(p => p.id === productId ? { ...p, stock: p.stock - qty } : p);
       setProducts(products);
-      const produtoAtualizado = products.find(p => p.id === productId);
-      if (window.salvarProdutoOnline) salvarProdutoOnline(produtoAtualizado).catch(console.error);
 
       const orders = getOrders();
-      const pedido = {
+      orders.unshift({
         id: crypto.randomUUID(), client, productId, productName: product.name,
         qty, total: qty * product.price, cost: qty * (product.cost || 0), address,
         status: 'Novo pedido', createdAt: now()
-      };
-      orders.unshift(pedido);
+      });
       setOrders(orders);
-      if (window.salvarPedidoOnline) salvarPedidoOnline(pedido).catch(console.error);
 
       const moves = getMovements();
-      const movimento = { id: crypto.randomUUID(), productName: product.name, type: 'saida', qty, reason: 'Venda para ' + client, date: now(), by: currentUser.name };
-      moves.unshift(movimento);
+      moves.unshift({ id: crypto.randomUUID(), productName: product.name, type: 'saida', qty, reason: 'Venda para ' + client, date: now(), by: currentUser.name });
       setMovements(moves);
-      if (window.salvarMovimentoOnline) salvarMovimentoOnline(movimento).catch(console.error);
 
       log('Novo pedido criado para ' + client);
       ['orderClient','orderAddress'].forEach(id => document.getElementById(id).value = '');
@@ -635,7 +573,6 @@
     function updateOrderStatus(id, status) {
       const orders = getOrders().map(o => o.id === id ? { ...o, status } : o);
       setOrders(orders);
-      if (window.atualizarPedidoOnline) atualizarPedidoOnline(id, { status }).catch(console.error);
       log('Pedido atualizado para: ' + status);
       renderAll();
     }
@@ -654,14 +591,10 @@
         return { ...p, stock: type === 'entrada' ? p.stock + qty : p.stock - qty };
       });
       setProducts(products);
-      const produtoAtualizado = products.find(p => p.id === productId);
-      if (window.salvarProdutoOnline) salvarProdutoOnline(produtoAtualizado).catch(console.error);
 
       const moves = getMovements();
-      const movimento = { id: crypto.randomUUID(), productName: product.name, type, qty, reason, date: now(), by: currentUser.name };
-      moves.unshift(movimento);
+      moves.unshift({ id: crypto.randomUUID(), productName: product.name, type, qty, reason, date: now(), by: currentUser.name });
       setMovements(moves);
-      if (window.salvarMovimentoOnline) salvarMovimentoOnline(movimento).catch(console.error);
       log('Movimento de estoque: ' + type + ' de ' + qty + 'x ' + product.name);
       document.getElementById('stockQty').value = 1;
       document.getElementById('stockReason').value = '';
@@ -761,13 +694,11 @@
 
     function seedDemoData() {
       if (!confirm('Gerar dados de exemplo?')) return;
-      const produtosDemo = [
+      setProducts([
         { id: crypto.randomUUID(), name: 'Camisa Básica', category: 'Roupas', cost: 18, price: 39.9, stock: 25, createdAt: now() },
         { id: crypto.randomUUID(), name: 'Boné Street', category: 'Acessórios', cost: 22, price: 49.9, stock: 15, createdAt: now() },
         { id: crypto.randomUUID(), name: 'Chaveiro Geek', category: 'Brinquedos/Acessórios', cost: 4, price: 12.9, stock: 60, createdAt: now() }
-      ];
-      setProducts(produtosDemo);
-      if (window.salvarProdutoOnline) produtosDemo.forEach(p => salvarProdutoOnline(p).catch(console.error));
+      ]);
       setOrders([]); setMovements([]); setLogs([]);
       log('Dados demo gerados.');
       renderAll();
@@ -785,5 +716,95 @@
       }
     });
   </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC55lW4WFgEZ9kW1VxRaXcpymY6ivjplAg",
+      authDomain: "painel-loja-958cf.firebaseapp.com",
+      projectId: "painel-loja-958cf",
+      storageBucket: "painel-loja-958cf.firebasestorage.app",
+      messagingSenderId: "231673295312",
+      appId: "1:231673295312:web:c5d0e4d25386d9b95a89d5",
+      measurementId: "G-ESD4TMHEP3"
+    };
+
+    const appFirebase = initializeApp(firebaseConfig);
+    const dbFirebase = getFirestore(appFirebase);
+
+    window.dbFirebase = dbFirebase;
+
+    // 🔥 BACKEND DE ACESSOS
+    // Toda vez que alguém abre o site, o Firebase salva um registro na coleção "acessos".
+    window.registrarAcesso = async function() {
+      try {
+        const userSaved = sessionStorage.getItem("currentUser");
+        let usuario = "Visitante / não logado";
+
+        if (userSaved) {
+          const parsed = JSON.parse(userSaved);
+          usuario = `${parsed.name || "Usuário"} - ${parsed.role || "Cargo não informado"}`;
+        }
+
+        await addDoc(collection(dbFirebase, "acessos"), {
+          usuario,
+          pagina: location.href,
+          titulo: document.title,
+          dataLocal: new Date().toLocaleString("pt-BR"),
+          criadoEm: serverTimestamp(),
+          navegador: navigator.userAgent,
+          plataforma: navigator.platform,
+          idioma: navigator.language,
+          larguraTela: window.innerWidth,
+          alturaTela: window.innerHeight
+        });
+
+        console.log("ACESSO REGISTRADO NO FIREBASE 🔥");
+      } catch (erro) {
+        console.error("Erro ao registrar acesso no Firebase:", erro);
+      }
+    };
+
+    // 🔥 TESTE MANUAL: salva produto online no Firebase pelo console
+    window.salvarProdutoOnline = async function(produto) {
+      try {
+        await addDoc(collection(dbFirebase, "produtos"), {
+          ...produto,
+          criadoEm: serverTimestamp(),
+          dataLocal: new Date().toLocaleString("pt-BR")
+        });
+        console.log("PRODUTO SALVO NO FIREBASE 🔥");
+      } catch (erro) {
+        console.error("Erro ao salvar produto no Firebase:", erro);
+      }
+    };
+
+    // 🔥 TESTE MANUAL: carrega produtos online pelo console
+    window.carregarProdutosOnline = async function() {
+      try {
+        const snapshot = await getDocs(collection(dbFirebase, "produtos"));
+        const produtos = [];
+        snapshot.forEach(doc => produtos.push({ id: doc.id, ...doc.data() }));
+        console.table(produtos);
+        return produtos;
+      } catch (erro) {
+        console.error("Erro ao carregar produtos do Firebase:", erro);
+        return [];
+      }
+    };
+
+    window.addEventListener("load", () => {
+      window.registrarAcesso();
+    });
+  </script>
+
 </body>
 </html>
